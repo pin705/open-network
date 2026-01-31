@@ -1,9 +1,9 @@
 {
   "name": "open-network",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "The Ultimate Wireless Intelligence Suite - Desktop app for WiFi scanning, analysis and optimization",
   "main": "dist-electron/main.js",
-  "author": "Open Network Team",
+  "author": "Open Network Team <contact@opennetwork.com>",
   "license": "MIT",
   "private": true,
   "type": "module",
