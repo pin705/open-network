@@ -71,14 +71,14 @@
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "icon": "resources/icon.icns",
+      "icon": "resources/icon.png",
       "target": [
         "dmg",
         "zip"
       ]
     },
     "win": {
-      "icon": "resources/icon.ico",
+      "icon": "resources/icon.png",
       "target": [
         "nsis",
         "portable"

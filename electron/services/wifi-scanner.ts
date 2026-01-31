@@ -21,26 +21,66 @@ export class WifiScanner {
 
     try {
       let rawNetworks: RawNetwork[]
+      let connectedSsid: string | null = null
 
       switch (platform) {
         case 'darwin':
           rawNetworks = await this.scanMacOS()
+          connectedSsid = await this.getConnectedSsidMacOS()
           break
         case 'win32':
           rawNetworks = await this.scanWindows()
+          connectedSsid = await this.getConnectedSsidWindows()
           break
         case 'linux':
           rawNetworks = await this.scanLinux()
+          connectedSsid = await this.getConnectedSsidLinux()
           break
         default:
           console.warn(`Unsupported platform: ${platform}`)
           return []
       }
 
-      return rawNetworks.map(network => this.enrichNetwork(network))
+      return rawNetworks.map(network => {
+        const enriched = this.enrichNetwork(network)
+        if (connectedSsid && (enriched.ssid === connectedSsid || enriched.bssid === connectedSsid)) {
+          enriched.isConnected = true
+        }
+        return enriched
+      })
     } catch (error) {
       console.error('Scan failed:', error)
       return []
+    }
+  }
+
+  private async getConnectedSsidMacOS(): Promise<string | null> {
+    try {
+      const { stdout } = await execAsync('/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I')
+      const match = stdout.match(/\sSSID:\s(.+)/)
+      return match ? match[1].trim() : null
+    } catch {
+      return null
+    }
+  }
+
+  private async getConnectedSsidWindows(): Promise<string | null> {
+    try {
+      const { stdout } = await execAsync('netsh wlan show interfaces')
+      const match = stdout.match(/\sSSID\s+:\s(.+)/)
+      return match ? match[1].trim() : null
+    } catch {
+      return null
+    }
+  }
+
+  private async getConnectedSsidLinux(): Promise<string | null> {
+    try {
+      const { stdout } = await execAsync('nmcli -t -f active,ssid device wifi list')
+      const line = stdout.split('\n').find(l => l.startsWith('yes:'))
+      return line ? line.split(':')[1] : null
+    } catch {
+      return null
     }
   }
 

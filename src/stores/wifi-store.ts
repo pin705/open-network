@@ -1,89 +1,5 @@
 import { create } from 'zustand'
-
-// Mock data for development (will be replaced with real scanning)
-const mockNetworks: WifiNetwork[] = [
-  {
-    ssid: 'Home_5G_Premium',
-    bssid: 'AA:BB:CC:DD:EE:01',
-    rssi: -42,
-    channel: 36,
-    frequency: 5180,
-    security: 'WPA3',
-    vendor: 'ASUS',
-    band: '5GHz',
-    isConnected: true,
-  },
-  {
-    ssid: 'CoffeeShop_Free',
-    bssid: 'AA:BB:CC:DD:EE:02',
-    rssi: -65,
-    channel: 6,
-    frequency: 2437,
-    security: 'Open',
-    vendor: 'TP-Link',
-    band: '2.4GHz',
-  },
-  {
-    ssid: 'Neighbor_Network',
-    bssid: 'AA:BB:CC:DD:EE:03',
-    rssi: -72,
-    channel: 11,
-    frequency: 2462,
-    security: 'WPA2',
-    vendor: 'Netgear',
-    band: '2.4GHz',
-  },
-  {
-    ssid: 'Office_5G',
-    bssid: 'AA:BB:CC:DD:EE:04',
-    rssi: -55,
-    channel: 44,
-    frequency: 5220,
-    security: 'WPA2/WPA3',
-    vendor: 'Cisco',
-    band: '5GHz',
-  },
-  {
-    ssid: 'Guest_Network',
-    bssid: 'AA:BB:CC:DD:EE:05',
-    rssi: -78,
-    channel: 1,
-    frequency: 2412,
-    security: 'WPA',
-    vendor: 'D-Link',
-    band: '2.4GHz',
-  },
-  {
-    ssid: 'IoT_Network',
-    bssid: 'AA:BB:CC:DD:EE:06',
-    rssi: -68,
-    channel: 6,
-    frequency: 2437,
-    security: 'WPA2',
-    vendor: 'Apple',
-    band: '2.4GHz',
-  },
-  {
-    ssid: 'Gaming_5G',
-    bssid: 'AA:BB:CC:DD:EE:07',
-    rssi: -48,
-    channel: 149,
-    frequency: 5745,
-    security: 'WPA3',
-    vendor: 'ASUS',
-    band: '5GHz',
-  },
-  {
-    ssid: 'Legacy_WEP',
-    bssid: 'AA:BB:CC:DD:EE:08',
-    rssi: -85,
-    channel: 3,
-    frequency: 2422,
-    security: 'WEP',
-    vendor: 'Linksys',
-    band: '2.4GHz',
-  },
-]
+import { WifiNetwork } from '@/lib/types'
 
 interface SignalHistory {
   time: Date
@@ -99,6 +15,7 @@ interface WifiState {
   signalHistory: SignalHistory[]
   autoRefresh: boolean
   autoRefreshInterval: number // seconds
+  error: string | null
 
   // Actions
   scan: () => Promise<void>
@@ -116,12 +33,13 @@ export const useWifiStore = create<WifiState>((set, get) => ({
   signalHistory: [],
   autoRefresh: true,
   autoRefreshInterval: 5,
+  error: null,
 
   scan: async () => {
-    set({ scanning: true })
+    set({ scanning: true, error: null })
     
     try {
-      // Try to use Electron API first
+      // Use Electron API for real scanning
       if (window.electronAPI?.scanWifi) {
         const networks = await window.electronAPI.scanWifi()
         const connected = networks.find(n => n.isConnected) || null
@@ -142,35 +60,18 @@ export const useWifiStore = create<WifiState>((set, get) => ({
           })
         }
       } else {
-        // Use mock data for development
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Add some variance to mock data
-        const networksWithVariance = mockNetworks.map(n => ({
-          ...n,
-          rssi: n.rssi + Math.floor(Math.random() * 10) - 5
-        }))
-        
-        const connected = networksWithVariance.find(n => n.isConnected) || null
-        
+        // Running in browser without Electron
         set({ 
-          networks: networksWithVariance, 
-          connectedNetwork: connected,
-          lastScanTime: new Date(),
-          scanning: false 
+          scanning: false,
+          error: 'WiFi scanning requires the desktop app'
         })
-        
-        if (connected) {
-          get().addSignalHistory({
-            time: new Date(),
-            rssi: connected.rssi,
-            ssid: connected.ssid,
-          })
-        }
       }
     } catch (error) {
       console.error('Scan failed:', error)
-      set({ scanning: false })
+      set({ 
+        scanning: false,
+        error: error instanceof Error ? error.message : 'Scan failed'
+      })
     }
   },
 

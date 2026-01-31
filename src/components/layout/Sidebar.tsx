@@ -38,10 +38,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Logo & App Title */}
       <div className="flex items-center h-14 px-4 border-b border-border/30 drag-region">
         <div className="flex items-center gap-3 no-drag">
-          {/* macOS-style App Icon */}
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
-            <Wifi className="w-5 h-5 text-white" />
-            <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
+          {/* App Icon using the custom SVG logo */}
+          <div className="relative flex-shrink-0">
+            <img 
+              src="/icon.svg" 
+              alt="Open Network" 
+              className="w-9 h-9 rounded-xl shadow-md"
+            />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
