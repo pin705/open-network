@@ -9,9 +9,6 @@ import {
   Monitor, 
   Timer, 
   Bell, 
-  Eye,
-  EyeOff,
-  Info
 } from 'lucide-react'
 
 export default function Settings() {
