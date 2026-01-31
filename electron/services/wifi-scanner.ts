@@ -56,9 +56,18 @@ export class WifiScanner {
 
   private async getConnectedSsidMacOS(): Promise<string | null> {
     try {
-      const { stdout } = await execAsync('/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I')
-      const match = stdout.match(/\sSSID:\s(.+)/)
-      return match ? match[1].trim() : null
+      // Use system_profiler -json for current SSID as well
+      const { stdout } = await execAsync('system_profiler SPAirPortDataType -json')
+      const data = JSON.parse(stdout)
+      const interfaces = data.SPAirPortDataType?.[0]?.spairport_airport_interfaces || []
+      
+      for (const iface of interfaces) {
+        const current = iface.spairport_current_network_information
+        if (current && current._name) {
+          return current._name
+        }
+      }
+      return null
     } catch {
       return null
     }
@@ -91,22 +100,74 @@ export class WifiScanner {
 
   private async scanMacOS(): Promise<RawNetwork[]> {
     try {
-      // 1. Try traditional airport utility first (though it's deprecated/missing on newer macOS)
-      const airportPath = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+      // 1. Try system_profiler -json (Modern and robust)
       try {
-        const { stdout } = await execAsync(`${airportPath} -s`)
-        const networks = this.parseMacOSOutput(stdout)
-        if (networks.length > 0) return networks
-      } catch (e) {
-        // Continue to fallback
+        const { stdout } = await execAsync('system_profiler SPAirPortDataType -json')
+        return this.parseProfilerJson(stdout)
+      } catch (jsonError) {
+        console.warn('JSON scan failed, falling back to airport:', jsonError)
       }
 
-      // 2. Fallback to system_profiler (works on Sonoma/Sequoia)
-      const { stdout: profilerOutput } = await execAsync('system_profiler SPAirPortDataType')
-      return this.parseProfilerOutput(profilerOutput)
+      // 2. Fallback to airport utility (deprecated)
+      const airportPath = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+      const { stdout: airportOutput } = await execAsync(`${airportPath} -s`)
+      return this.parseMacOSOutput(airportOutput)
     } catch (error) {
       console.error('macOS scan failed:', error)
       return []
+    }
+  }
+
+  private parseProfilerJson(jsonOutput: string): RawNetwork[] {
+    try {
+      const data = JSON.parse(jsonOutput)
+      const networks: RawNetwork[] = []
+      const interfaces = data.SPAirPortDataType?.[0]?.spairport_airport_interfaces || []
+
+      for (const iface of interfaces) {
+        // 1. Add current connected network
+        const current = iface.spairport_current_network_information
+        if (current && current._name) {
+          networks.push(this.transformProfilerNetwork(current))
+        }
+
+        // 2. Add other networks
+        const others = iface.spairport_airport_other_local_wireless_networks || []
+        for (const net of others) {
+          if (net._name) {
+            networks.push(this.transformProfilerNetwork(net))
+          }
+        }
+      }
+
+      return networks
+    } catch (e) {
+      console.error('Failed to parse profiler JSON:', e)
+      return []
+    }
+  }
+
+  private transformProfilerNetwork(net: any): RawNetwork {
+    // Channel format: "5 (2GHz, 20MHz)" or just "5"
+    let channel = 0
+    if (net.spairport_network_channel) {
+      const channelMatch = String(net.spairport_network_channel).match(/^(\d+)/)
+      if (channelMatch) channel = parseInt(channelMatch[1])
+    }
+
+    // Signal format: "-69 dBm / -97 dBm" 
+    let rssi = -70
+    if (net.spairport_signal_noise) {
+      const rssiMatch = String(net.spairport_signal_noise).match(/(-?\d+)\s+dBm/)
+      if (rssiMatch) rssi = parseInt(rssiMatch[1])
+    }
+
+    return {
+      ssid: net._name,
+      bssid: net.spairport_network_bssid || '00:00:00:00:00:00',
+      rssi,
+      channel,
+      security: this.normalizeSecurityMac(net.spairport_security_mode || 'Open')
     }
   }
 
