@@ -54,11 +54,11 @@
 
 ### Latest Release
 
-| Platform   | Download                                                                 | Architecture                      |
-| ---------- | ------------------------------------------------------------------------ | --------------------------------- |
-| 🍎 macOS   | [Open Network.dmg](https://github.com/opennetwork/releases/latest)       | Universal (Intel + Apple Silicon) |
-| 🪟 Windows | [Open Network Setup.exe](https://github.com/opennetwork/releases/latest) | x64                               |
-| 🐧 Linux   | [Open Network.AppImage](https://github.com/opennetwork/releases/latest)  | x64                               |
+| Platform   | Download                                                                         | Architecture                      |
+| ---------- | -------------------------------------------------------------------------------- | --------------------------------- |
+| 🍎 macOS   | [Open Network.dmg](https://github.com/pin705/open-network/releases/latest)       | Universal (Intel + Apple Silicon) |
+| 🪟 Windows | [Open Network Setup.exe](https://github.com/pin705/open-network/releases/latest) | x64                               |
+| 🐧 Linux   | [Open Network.AppImage](https://github.com/pin705/open-network/releases/latest)  | x64                               |
 
 > 📌 **Note**: Download links will be available once the first release is published.
 
@@ -76,7 +76,7 @@
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-pin705/open-network.git
+   git clone https://github.com/pin705/open-network.git
    cd open-network
    ```
 

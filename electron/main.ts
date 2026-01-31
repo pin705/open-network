@@ -9,14 +9,14 @@ import { PingResult, SpeedTestResult, LocalDevice, SystemInfo } from './types.js
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Squirrel startup handler is usually for Windows.
-// Note: In ESM, we can't easily require this without createRequire.
-// If you're not on Windows, this can be safely ignored or handled via createRequire.
 import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
 
-if (require('electron-squirrel-startup')) {
-  app.quit()
+// Squirrel startup handler is usually for Windows.
+if (process.platform === 'win32') {
+  const require = createRequire(import.meta.url)
+  if (require('electron-squirrel-startup')) {
+    app.quit()
+  }
 }
 
 let mainWindow: BrowserWindow | null = null

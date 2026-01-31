@@ -1,6 +1,6 @@
 {
   "name": "open-network",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Ultimate Wireless Intelligence Suite - Desktop app for WiFi scanning, analysis and optimization",
   "main": "dist-electron/main.js",
   "author": "Open Network Team",
@@ -17,7 +17,7 @@
     "build": "tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-builder",
+    "electron:build": "tsc --noEmit && vite build && electron-builder --publish always",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit"
   },
@@ -38,7 +38,8 @@
     "react-router-dom": "^6.21.0",
     "recharts": "^2.10.3",
     "tailwind-merge": "^2.2.0",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "electron-squirrel-startup": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
@@ -51,7 +52,6 @@
     "concurrently": "^8.2.2",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1",
-    "electron-squirrel-startup": "^1.0.1",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",

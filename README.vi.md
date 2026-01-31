@@ -54,11 +54,11 @@
 
 ### Phiên Bản Mới Nhất
 
-| Nền Tảng   | Tải Xuống                                                                | Kiến Trúc                         |
-| ---------- | ------------------------------------------------------------------------ | --------------------------------- |
-| 🍎 macOS   | [Open Network.dmg](https://github.com/opennetwork/releases/latest)       | Universal (Intel + Apple Silicon) |
-| 🪟 Windows | [Open Network Setup.exe](https://github.com/opennetwork/releases/latest) | x64                               |
-| 🐧 Linux   | [Open Network.AppImage](https://github.com/opennetwork/releases/latest)  | x64                               |
+| Nền Tảng   | Tải Xuống                                                                        | Kiến Trúc                         |
+| ---------- | -------------------------------------------------------------------------------- | --------------------------------- |
+| 🍎 macOS   | [Open Network.dmg](https://github.com/pin705/open-network/releases/latest)       | Universal (Intel + Apple Silicon) |
+| 🪟 Windows | [Open Network Setup.exe](https://github.com/pin705/open-network/releases/latest) | x64                               |
+| 🐧 Linux   | [Open Network.AppImage](https://github.com/pin705/open-network/releases/latest)  | x64                               |
 
 > 📌 **Lưu ý**: Link tải sẽ có sẵn khi bản release đầu tiên được xuất bản.
 

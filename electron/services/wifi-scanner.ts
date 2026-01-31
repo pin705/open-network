@@ -91,15 +91,94 @@ export class WifiScanner {
 
   private async scanMacOS(): Promise<RawNetwork[]> {
     try {
-      // Use airport utility on macOS
+      // 1. Try traditional airport utility first (though it's deprecated/missing on newer macOS)
       const airportPath = '/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
-      const { stdout } = await execAsync(`${airportPath} -s`)
-      
-      return this.parseMacOSOutput(stdout)
+      try {
+        const { stdout } = await execAsync(`${airportPath} -s`)
+        const networks = this.parseMacOSOutput(stdout)
+        if (networks.length > 0) return networks
+      } catch (e) {
+        // Continue to fallback
+      }
+
+      // 2. Fallback to system_profiler (works on Sonoma/Sequoia)
+      const { stdout: profilerOutput } = await execAsync('system_profiler SPAirPortDataType')
+      return this.parseProfilerOutput(profilerOutput)
     } catch (error) {
       console.error('macOS scan failed:', error)
       return []
     }
+  }
+
+  private parseProfilerOutput(output: string): RawNetwork[] {
+    const networks: RawNetwork[] = []
+    
+    // Split by interfaces
+    const interfaces = output.split(/Interfaces:\s+/)
+    if (interfaces.length < 2) return []
+
+    // Look for Wi-Fi networks in the output
+    const sections = ['Current Network Information:', 'Other Local Wi-Fi Networks:']
+    
+    for (const section of sections) {
+      const parts = output.split(section)
+      if (parts.length < 2) continue
+      
+      const content = parts[1].split(/^\s*[A-Za-z]+:/m)[0]
+      const networkBlocks = content.split('\n')
+      
+      let currentNetwork: Partial<RawNetwork> & { lastIndent: number } = { lastIndent: -1 }
+      let currentSsid = ''
+
+      for (const line of networkBlocks) {
+        if (!line.trim()) continue
+        
+        const indent = line.search(/\S/)
+        const trimmed = line.trim()
+
+        // If indent is small, it's likely a new SSID
+        if (indent > 0 && (currentNetwork.lastIndent === -1 || indent <= currentNetwork.lastIndent)) {
+          // Push previous if complete
+          if (currentSsid && currentNetwork.rssi !== undefined) {
+            networks.push({
+              ssid: currentSsid,
+              bssid: currentNetwork.bssid || `00:00:00:00:00:00`, // system_profiler usually doesn't show other BSSIDs
+              rssi: currentNetwork.rssi,
+              channel: currentNetwork.channel || 0,
+              security: currentNetwork.security || 'Open'
+            })
+          }
+          
+          currentSsid = trimmed.replace(/:$/, '')
+          currentNetwork = { lastIndent: indent }
+        } else if (currentSsid) {
+          if (trimmed.startsWith('Channel:')) {
+            const match = trimmed.match(/Channel:\s+(\d+)/)
+            if (match) currentNetwork.channel = parseInt(match[1])
+          } else if (trimmed.startsWith('Signal / Noise:')) {
+            const match = trimmed.match(/Signal \/ Noise:\s+(-\d+)/)
+            if (match) currentNetwork.rssi = parseInt(match[1])
+          } else if (trimmed.startsWith('Security:')) {
+            const match = trimmed.match(/Security:\s+(.+)/)
+            if (match) currentNetwork.security = this.normalizeSecurityMac(match[1])
+          }
+        }
+      }
+      
+      // Push last one
+      if (currentSsid && currentNetwork.rssi !== undefined) {
+        networks.push({
+          ssid: currentSsid,
+          bssid: currentNetwork.bssid || `00:00:00:00:00:00`,
+          rssi: currentNetwork.rssi,
+          channel: currentNetwork.channel || 0,
+          security: currentNetwork.security || 'Open'
+        })
+      }
+    }
+
+    // Deduplicate by SSID if BSSIDs are missing
+    return Array.from(new Map(networks.map(n => [n.ssid, n])).values())
   }
 
   private parseMacOSOutput(output: string): RawNetwork[] {
