@@ -1,193 +1,191 @@
-# 🌐 Open Network
+<div align="center">
+  <img src="public/icon.svg" alt="Open Network Logo" width="120" height="120">
+  
+  # Open Network
+  
+  **The Ultimate Wireless Intelligence Suite**
+  
+  A beautiful, cross-platform desktop application for WiFi network analysis, signal monitoring, and network diagnostics.
 
-**The Ultimate Wireless Intelligence Suite**
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)]()
+[![Electron](https://img.shields.io/badge/Electron-28-47848F.svg?logo=electron)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react)](https://react.dev/)
 
-Open Network là một ứng dụng Desktop (xây dựng trên Electron + React) cung cấp giải pháp toàn diện để quét, phân tích và tối ưu hóa các mạng không dây xung quanh bạn.
+[🇺🇸 English](#features) | [🇻🇳 Tiếng Việt](README.vi.md)
 
-![Open Network Dashboard](./screenshots/dashboard.png)
+</div>
 
 ---
 
-## ✨ Tính năng chính
+## ✨ Features
 
 ### 📡 WiFi Scanner
 
-- **Quét toàn diện**: Hiển thị SSID, BSSID, cường độ tín hiệu (RSSI) và kênh
-- **Nhận diện thiết bị**: Tự động tra cứu OUI để biết hãng sản xuất (Apple, Cisco, TP-Link...)
-- **Phân tích bảo mật**: Gắn nhãn và cảnh báo các mạng sử dụng giao thức yếu (WEP, WPA)
-- **Lọc thông minh**: Filter theo băng tần (2.4GHz/5GHz) hoặc cường độ tín hiệu
+- Real-time detection of all nearby wireless networks
+- Signal strength visualization with live updates
+- Channel analysis to find the least congested channel
+- Security protocol identification (WPA3, WPA2, WPA, WEP, Open)
+- Manufacturer detection via MAC address OUI lookup
 
 ### 📊 Signal Analytics
 
-- **Real-time Charts**: Biểu đồ đường theo dõi độ ổn định tín hiệu theo thời gian thực
-- **Channel Interference**: Biểu đồ cột hiển thị sự chồng chéo giữa các kênh WiFi
-- **Security Overview**: Phân tích phân bố các giao thức bảo mật trong vùng phủ sóng
-- **Band Distribution**: So sánh mật độ mạng 2.4GHz vs 5GHz vs 6GHz
-
-### 🛠 Network Toolbox
-
-- **Speed Test**: Đo tốc độ download/upload ngay trong app
-- **Ping & Latency**: Kiểm tra độ trễ tới các server phổ biến
-- **Local Network Scanner**: Quét và liệt kê tất cả thiết bị trong mạng LAN
-
----
-
-## 🚀 Cài đặt
-
-### Yêu cầu hệ thống
-
-- Node.js 18+
-- npm hoặc pnpm
-
-### Development
-
-```bash
-# Clone repository
-git clone https://github.com/yourname/open-network.git
-cd open-network
-
-# Cài đặt dependencies
-npm install
-
-# Chạy development mode
-npm run dev
-```
-
-### Build Production
-
-```bash
-# Build cho platform hiện tại
-npm run electron:build
-
-# Build files sẽ được tạo trong thư mục /release
-```
-
----
-
-## 🎨 Screenshots
-
-<details>
-<summary>Dashboard</summary>
-
-- Tổng quan số lượng networks
-- Thông tin network đang kết nối
-- Biểu đồ signal real-time
-- Phân bố channel
-
-</details>
-
-<details>
-<summary>WiFi Scanner</summary>
-
-- Bảng dữ liệu đầy đủ với sorting/filtering
-- Signal strength indicators
-- Security badges
-- Export to CSV
-
-</details>
-
-<details>
-<summary>Analytics</summary>
-
-- Signal strength tracking
+- Real-time signal strength tracking over time
 - Channel interference analysis
-- Security protocol distribution
-- Band comparison
+- Security distribution charts
+- Frequency band comparison (2.4 GHz vs 5 GHz vs 6 GHz)
 
-</details>
+### 🛠️ Network Toolbox
 
----
+- **Speed Test**: Real bandwidth measurement using Cloudflare's servers
+- **Ping Tool**: Network latency and packet loss testing
+- **Local Network Scanner**: Discover devices on your network
 
-## 🔧 Công nghệ sử dụng
+### 🎨 Modern Design
 
-| Category         | Technology               |
-| ---------------- | ------------------------ |
-| Framework        | Electron 28 + React 18   |
-| Build Tool       | Vite                     |
-| UI Library       | shadcn/ui + Tailwind CSS |
-| Charts           | Recharts                 |
-| State Management | Zustand                  |
-| Icons            | Lucide React             |
+- macOS-inspired vibrancy UI with glassmorphism effects
+- Dark and Light mode with automatic system detection
+- Smooth animations and micro-interactions
+- Responsive sidebar navigation
 
 ---
 
-## 📁 Cấu trúc dự án
+## 📥 Download
+
+### Latest Release
+
+| Platform   | Download                                                                 | Architecture                      |
+| ---------- | ------------------------------------------------------------------------ | --------------------------------- |
+| 🍎 macOS   | [Open Network.dmg](https://github.com/opennetwork/releases/latest)       | Universal (Intel + Apple Silicon) |
+| 🪟 Windows | [Open Network Setup.exe](https://github.com/opennetwork/releases/latest) | x64                               |
+| 🐧 Linux   | [Open Network.AppImage](https://github.com/opennetwork/releases/latest)  | x64                               |
+
+> 📌 **Note**: Download links will be available once the first release is published.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** 18+
+- **pnpm** (recommended) or npm
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-pin705/open-network.git
+   cd open-network
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   pnpm install
+   # or
+   npm install
+   ```
+
+3. **Start development server**
+
+   ```bash
+   pnpm dev
+   # or
+   npm run dev
+   ```
+
+4. **Build for production**
+   ```bash
+   pnpm build
+   # or
+   npm run build
+   ```
+
+### Development Commands
+
+| Command           | Description                              |
+| ----------------- | ---------------------------------------- |
+| `pnpm dev`        | Start development server with hot reload |
+| `pnpm build`      | Build for production                     |
+| `pnpm preview`    | Preview production build                 |
+| `pnpm lint`       | Run ESLint                               |
+| `pnpm type-check` | Run TypeScript type checking             |
+
+---
+
+## 🏗️ Project Structure
 
 ```
 open-network/
-├── electron/                 # Electron main process
-│   ├── main.ts              # Entry point
-│   ├── preload.ts           # Context bridge
-│   └── services/
-│       ├── wifi-scanner.ts  # Platform-specific WiFi scanning
-│       ├── network-tools.ts # Ping, speedtest, ARP scan
-│       └── oui-lookup.ts    # MAC vendor lookup
-├── src/                     # React renderer
-│   ├── components/
-│   │   ├── ui/              # shadcn/ui components
-│   │   ├── layout/          # Sidebar, Header
-│   │   ├── dashboard/       # Dashboard widgets
-│   │   ├── scanner/         # WiFi scanner components
-│   │   └── analytics/       # Charts & visualizations
-│   ├── pages/               # Route pages
-│   ├── hooks/               # Custom React hooks
-│   ├── stores/              # Zustand stores
-│   └── lib/                 # Utilities
-├── package.json
-├── vite.config.ts
-└── tailwind.config.js
+├── electron/               # Electron main process
+│   ├── main.ts            # Main entry point
+│   ├── preload.ts         # Preload script for IPC
+│   ├── types.ts           # Shared TypeScript types
+│   └── services/          # Backend services
+│       ├── wifi-scanner.ts    # Cross-platform WiFi scanning
+│       ├── network-tools.ts   # Ping, speed test, ARP scan
+│       └── oui-lookup.ts      # MAC vendor lookup
+├── src/                    # React frontend
+│   ├── components/        # Reusable UI components
+│   │   ├── ui/           # shadcn/ui components
+│   │   ├── layout/       # Layout components
+│   │   ├── dashboard/    # Dashboard widgets
+│   │   ├── scanner/      # Scanner components
+│   │   └── analytics/    # Analytics charts
+│   ├── pages/            # Page components
+│   ├── hooks/            # Custom React hooks
+│   ├── stores/           # Zustand state stores
+│   ├── lib/              # Utilities and helpers
+│   └── index.css         # Global styles
+├── public/               # Static assets
+└── package.json
 ```
 
 ---
 
-## ⚠️ Lưu ý về Permissions
+## 🔧 Technology Stack
 
-Để app hoạt động tốt nhất, Open Network cần một số quyền hệ thống:
-
-### macOS
-
-- **Location Services**: Cần để truy cập WiFi scan API
-- App sử dụng airport utility có sẵn trong hệ thống
-
-### Windows
-
-- Chạy với quyền Administrator để quét đầy đủ
-- Sử dụng `netsh wlan` commands
-
-### Linux
-
-- Cần quyền sudo cho một số tính năng
-- Sử dụng `nmcli` (NetworkManager) hoặc `iwlist`
+| Category      | Technology              |
+| ------------- | ----------------------- |
+| **Framework** | Electron 28             |
+| **Frontend**  | React 18, TypeScript    |
+| **Styling**   | Tailwind CSS, shadcn/ui |
+| **State**     | Zustand                 |
+| **Charts**    | Recharts                |
+| **Build**     | Vite, electron-builder  |
+| **Icons**     | Lucide React            |
 
 ---
 
-## 🤝 Đóng góp
+## 🤝 Contributing
 
-Mọi đóng góp đều được chào đón! Vui lòng:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork repository
-2. Tạo branch mới (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Mở Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-MIT License - xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Credits
+## 🙏 Acknowledgments
 
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
-- [Recharts](https://recharts.org/) - Charting library
-- [Lucide](https://lucide.dev/) - Icon library
-- [Electron](https://electronjs.org/) - Desktop framework
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [Recharts](https://recharts.org/) for chart components
+- [Lucide](https://lucide.dev/) for icons
+- [Electron](https://www.electronjs.org/) for cross-platform desktop support
 
 ---
 
-<p align="center">
+<div align="center">
   Made with ❤️ by the Open Network Team
-</p>
+</div>

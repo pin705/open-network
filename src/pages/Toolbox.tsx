@@ -18,13 +18,16 @@ import {
   Timer, 
   Network, 
   Play, 
-  Square,
   Globe,
   Server,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  ArrowDown,
+  ArrowUp,
+  Zap
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface PingResult {
   host: string
@@ -45,68 +48,77 @@ export default function Toolbox() {
   const [speedTestProgress, setSpeedTestProgress] = useState(0)
   const [downloadSpeed, setDownloadSpeed] = useState<number | null>(null)
   const [uploadSpeed, setUploadSpeed] = useState<number | null>(null)
+  const [testPing, setTestPing] = useState<number | null>(null)
   const [pingResults, setPingResults] = useState<PingResult[]>([])
   const [pingRunning, setPingRunning] = useState(false)
   const [pingHost, setPingHost] = useState('8.8.8.8')
   const [localDevices, setLocalDevices] = useState<LocalDevice[]>([])
   const [networkScanRunning, setNetworkScanRunning] = useState(false)
 
-  // Mock speed test
+  // Real speed test using Electron API
   const runSpeedTest = async () => {
+    if (!window.electronAPI) return
+    
     setSpeedTestRunning(true)
     setSpeedTestProgress(0)
     setDownloadSpeed(null)
     setUploadSpeed(null)
+    setTestPing(null)
 
-    // Simulate download test
-    for (let i = 0; i <= 50; i++) {
-      await new Promise(r => setTimeout(r, 50))
-      setSpeedTestProgress(i)
-    }
-    setDownloadSpeed(Math.random() * 200 + 50)
+    try {
+      // Simulate progress animation
+      const progressInterval = setInterval(() => {
+        setSpeedTestProgress(prev => Math.min(prev + 2, 95))
+      }, 100)
 
-    // Simulate upload test
-    for (let i = 50; i <= 100; i++) {
-      await new Promise(r => setTimeout(r, 50))
-      setSpeedTestProgress(i)
+      const result = await window.electronAPI.speedTest()
+      
+      clearInterval(progressInterval)
+      setSpeedTestProgress(100)
+      setDownloadSpeed(result.download)
+      setUploadSpeed(result.upload)
+      setTestPing(result.ping)
+    } catch (error) {
+      console.error('Speed test failed:', error)
     }
-    setUploadSpeed(Math.random() * 50 + 20)
     
     setSpeedTestRunning(false)
   }
 
-  // Mock ping test
+  // Real ping test using Electron API
   const runPing = async () => {
-    setPingRunning(true)
-    const results: PingResult[] = []
+    if (!window.electronAPI) return
     
-    for (let i = 0; i < 5; i++) {
-      await new Promise(r => setTimeout(r, 500))
-      const result: PingResult = {
-        host: pingHost,
-        latency: Math.random() * 30 + 10,
-        success: Math.random() > 0.1,
-        timestamp: new Date(),
-      }
-      results.push(result)
-      setPingResults([...results])
+    setPingRunning(true)
+    setPingResults([])
+    
+    try {
+      const result = await window.electronAPI.pingHost(pingHost)
+      setPingResults([{
+        host: result.host,
+        latency: result.latency,
+        success: result.success,
+        timestamp: new Date()
+      }])
+    } catch (error) {
+      console.error('Ping failed:', error)
     }
     
     setPingRunning(false)
   }
 
-  // Mock network scan
+  // Real network scan using Electron API
   const scanLocalNetwork = async () => {
-    setNetworkScanRunning(true)
-    await new Promise(r => setTimeout(r, 2000))
+    if (!window.electronAPI) return
     
-    setLocalDevices([
-      { ip: '192.168.1.1', mac: 'AA:BB:CC:DD:EE:01', hostname: 'router.local', vendor: 'ASUS' },
-      { ip: '192.168.1.2', mac: 'AA:BB:CC:DD:EE:02', hostname: 'macbook.local', vendor: 'Apple' },
-      { ip: '192.168.1.3', mac: 'AA:BB:CC:DD:EE:03', hostname: 'iphone.local', vendor: 'Apple' },
-      { ip: '192.168.1.4', mac: 'AA:BB:CC:DD:EE:04', hostname: 'nas.local', vendor: 'Synology' },
-      { ip: '192.168.1.5', mac: 'AA:BB:CC:DD:EE:05', vendor: 'Unknown' },
-    ])
+    setNetworkScanRunning(true)
+    
+    try {
+      const devices = await window.electronAPI.scanLocalNetwork()
+      setLocalDevices(devices)
+    } catch (error) {
+      console.error('Network scan failed:', error)
+    }
     
     setNetworkScanRunning(false)
   }
@@ -123,23 +135,23 @@ export default function Toolbox() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Network Toolbox</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight">Network Toolbox</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Test your network performance and discover local devices
         </p>
       </div>
 
       <Tabs defaultValue="speedtest" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="speedtest" className="gap-2">
+        <TabsList className="bg-muted/50">
+          <TabsTrigger value="speedtest" className="gap-2 text-[13px]">
             <Gauge className="h-4 w-4" />
             Speed Test
           </TabsTrigger>
-          <TabsTrigger value="ping" className="gap-2">
+          <TabsTrigger value="ping" className="gap-2 text-[13px]">
             <Timer className="h-4 w-4" />
-            Ping & Latency
+            Ping
           </TabsTrigger>
-          <TabsTrigger value="network" className="gap-2">
+          <TabsTrigger value="network" className="gap-2 text-[13px]">
             <Network className="h-4 w-4" />
             Network Scan
           </TabsTrigger>
@@ -148,19 +160,57 @@ export default function Toolbox() {
         {/* Speed Test Tab */}
         <TabsContent value="speedtest">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2">
-                <Gauge className="h-5 w-5" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <Zap className="h-4 w-4 text-primary" />
+                </div>
                 Internet Speed Test
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex justify-center">
+              {/* Speed Results */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/10 text-center">
+                  <ArrowDown className="w-5 h-5 text-blue-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-blue-500">
+                    {downloadSpeed !== null ? downloadSpeed.toFixed(1) : '--'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">Download Mbps</div>
+                </div>
+                <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/10 text-center">
+                  <ArrowUp className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-emerald-500">
+                    {uploadSpeed !== null ? uploadSpeed.toFixed(1) : '--'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">Upload Mbps</div>
+                </div>
+                <div className="p-6 rounded-xl bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/10 text-center">
+                  <Timer className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-amber-500">
+                    {testPing !== null ? Math.round(testPing) : '--'}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">Ping ms</div>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              {speedTestRunning && (
+                <div className="space-y-2">
+                  <Progress value={speedTestProgress} className="h-2" />
+                  <p className="text-xs text-center text-muted-foreground">
+                    Testing connection to Cloudflare servers...
+                  </p>
+                </div>
+              )}
+
+              {/* Start Button */}
+              <div className="flex justify-center pt-2">
                 <Button 
                   size="lg" 
                   onClick={runSpeedTest} 
                   disabled={speedTestRunning}
-                  className="gap-2 px-8"
+                  className="gap-2 px-8 h-11"
                 >
                   {speedTestRunning ? (
                     <>
@@ -170,36 +220,10 @@ export default function Toolbox() {
                   ) : (
                     <>
                       <Play className="h-4 w-4" />
-                      Start Test
+                      Start Speed Test
                     </>
                   )}
                 </Button>
-              </div>
-
-              {speedTestRunning && (
-                <div className="space-y-2">
-                  <Progress value={speedTestProgress} />
-                  <p className="text-sm text-center text-muted-foreground">
-                    {speedTestProgress <= 50 ? 'Testing download...' : 'Testing upload...'}
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-6 rounded-lg bg-muted/50 text-center">
-                  <div className="text-sm text-muted-foreground mb-2">Download</div>
-                  <div className="text-4xl font-bold text-primary">
-                    {downloadSpeed !== null ? `${downloadSpeed.toFixed(1)}` : '--'}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Mbps</div>
-                </div>
-                <div className="p-6 rounded-lg bg-muted/50 text-center">
-                  <div className="text-sm text-muted-foreground mb-2">Upload</div>
-                  <div className="text-4xl font-bold text-primary">
-                    {uploadSpeed !== null ? `${uploadSpeed.toFixed(1)}` : '--'}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Mbps</div>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -208,9 +232,11 @@ export default function Toolbox() {
         {/* Ping Tab */}
         <TabsContent value="ping">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2">
-                <Timer className="h-5 w-5" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                  <Timer className="h-4 w-4 text-primary" />
+                </div>
                 Ping & Latency Test
               </CardTitle>
             </CardHeader>
@@ -220,6 +246,7 @@ export default function Toolbox() {
                   placeholder="Host (IP or domain)"
                   value={pingHost}
                   onChange={(e) => setPingHost(e.target.value)}
+                  className="font-mono"
                 />
                 <Button onClick={runPing} disabled={pingRunning} className="gap-2 shrink-0">
                   {pingRunning ? (
@@ -233,12 +260,12 @@ export default function Toolbox() {
 
               {/* Quick ping targets */}
               <div className="flex flex-wrap gap-2">
-                <span className="text-sm text-muted-foreground">Quick targets:</span>
+                <span className="text-xs text-muted-foreground">Quick:</span>
                 {['8.8.8.8', '1.1.1.1', 'google.com', 'cloudflare.com'].map(host => (
                   <Badge
                     key={host}
                     variant="outline"
-                    className="cursor-pointer hover:bg-accent"
+                    className="cursor-pointer hover:bg-accent text-[11px]"
                     onClick={() => setPingHost(host)}
                   >
                     {host}
@@ -250,32 +277,35 @@ export default function Toolbox() {
               {pingResults.length > 0 && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 rounded-lg bg-muted/50 text-center">
-                      <div className="text-sm text-muted-foreground">Avg Latency</div>
-                      <div className="text-2xl font-bold">{avgLatency} ms</div>
+                    <div className="p-4 rounded-xl bg-muted/50 text-center">
+                      <div className="text-xs text-muted-foreground">Latency</div>
+                      <div className="text-2xl font-bold mt-1">{avgLatency} ms</div>
                     </div>
-                    <div className="p-4 rounded-lg bg-muted/50 text-center">
-                      <div className="text-sm text-muted-foreground">Packet Loss</div>
-                      <div className="text-2xl font-bold">{packetLoss}%</div>
+                    <div className="p-4 rounded-xl bg-muted/50 text-center">
+                      <div className="text-xs text-muted-foreground">Packet Loss</div>
+                      <div className={cn(
+                        "text-2xl font-bold mt-1",
+                        Number(packetLoss) > 0 ? "text-red-500" : "text-emerald-500"
+                      )}>
+                        {packetLoss}%
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-md border">
+                  <div className="rounded-xl border overflow-hidden">
                     <Table>
                       <TableHeader>
-                        <TableRow>
-                          <TableHead>#</TableHead>
-                          <TableHead>Host</TableHead>
-                          <TableHead>Latency</TableHead>
-                          <TableHead>Status</TableHead>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="text-xs">Host</TableHead>
+                          <TableHead className="text-xs">Latency</TableHead>
+                          <TableHead className="text-xs">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {pingResults.map((result, i) => (
                           <TableRow key={i}>
-                            <TableCell>{i + 1}</TableCell>
-                            <TableCell>{result.host}</TableCell>
-                            <TableCell>{result.latency.toFixed(1)} ms</TableCell>
+                            <TableCell className="font-mono text-[13px]">{result.host}</TableCell>
+                            <TableCell className="text-[13px]">{result.latency.toFixed(1)} ms</TableCell>
                             <TableCell>
                               {result.success ? (
                                 <CheckCircle className="h-4 w-4 text-emerald-500" />
@@ -297,10 +327,12 @@ export default function Toolbox() {
         {/* Network Scan Tab */}
         <TabsContent value="network">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Network className="h-5 w-5" />
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                    <Network className="h-4 w-4 text-primary" />
+                  </div>
                   Local Network Devices
                 </CardTitle>
                 <Button onClick={scanLocalNetwork} disabled={networkScanRunning} className="gap-2">
@@ -315,24 +347,24 @@ export default function Toolbox() {
             </CardHeader>
             <CardContent>
               {localDevices.length > 0 ? (
-                <div className="rounded-md border">
+                <div className="rounded-xl border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>IP Address</TableHead>
-                        <TableHead>MAC Address</TableHead>
-                        <TableHead>Hostname</TableHead>
-                        <TableHead>Vendor</TableHead>
+                      <TableRow className="hover:bg-transparent">
+                        <TableHead className="text-xs">IP Address</TableHead>
+                        <TableHead className="text-xs">MAC Address</TableHead>
+                        <TableHead className="text-xs">Vendor</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {localDevices.map((device, i) => (
                         <TableRow key={i}>
-                          <TableCell className="font-mono">{device.ip}</TableCell>
-                          <TableCell className="font-mono text-muted-foreground">{device.mac}</TableCell>
-                          <TableCell>{device.hostname || '-'}</TableCell>
+                          <TableCell className="font-mono text-[13px]">{device.ip}</TableCell>
+                          <TableCell className="font-mono text-xs text-muted-foreground">{device.mac}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{device.vendor}</Badge>
+                            <Badge variant="outline" className="text-[10px]">
+                              {device.vendor || 'Unknown'}
+                            </Badge>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -340,9 +372,9 @@ export default function Toolbox() {
                   </Table>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Server className="h-12 w-12 mb-4" />
-                  <p>Click "Scan Network" to discover devices</p>
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <Server className="h-10 w-10 mb-3 text-muted-foreground/50" />
+                  <p className="text-sm">Click "Scan Network" to discover devices</p>
                 </div>
               )}
             </CardContent>

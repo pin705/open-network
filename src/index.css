@@ -2,50 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import SF Pro font for macOS look */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* macOS-style colors */
+    --sidebar-bg: 240 4.8% 97%;
+    --vibrancy: rgba(255, 255, 255, 0.72);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
     --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 217.2 91.2% 59.8%;
+
+    /* macOS-style dark colors */
+    --sidebar-bg: 240 10% 5%;
+    --vibrancy: rgba(30, 30, 30, 0.85);
   }
 }
 
@@ -53,32 +64,55 @@
   * {
     @apply border-border;
   }
+
+  html {
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Display",
+      "SF Pro Text",
+      "Helvetica Neue",
+      system-ui,
+      sans-serif;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
       "rlig" 1,
-      "calt" 1;
+      "calt" 1,
+      "cv02" 1,
+      "cv03" 1,
+      "cv04" 1,
+      "cv11" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.011em;
   }
 }
 
-/* Custom scrollbar for the app */
+/* macOS-style scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted/50;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
+  @apply bg-foreground/10 rounded-full;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
+  @apply bg-foreground/20;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Electron window drag region */
@@ -90,12 +124,66 @@
   -webkit-app-region: no-drag;
 }
 
-/* Signal strength indicator animations */
+/* macOS-style vibrancy sidebar */
+.macos-sidebar {
+  background: var(--vibrancy);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.dark .macos-sidebar {
+  background: rgba(28, 28, 30, 0.92);
+}
+
+/* macOS-style glass card */
+.glass-card {
+  @apply bg-card/80 backdrop-blur-xl border border-border/50 shadow-sm;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.9) 0%,
+    hsl(var(--card) / 0.7) 100%
+  );
+}
+
+.dark .glass-card {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.9) 0%,
+    hsl(var(--card) / 0.6) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* macOS-style hover states */
+.macos-hover {
+  @apply transition-all duration-200 ease-out;
+}
+
+.macos-hover:hover {
+  @apply bg-accent/80 shadow-sm;
+  transform: translateY(-1px);
+}
+
+.macos-hover:active {
+  transform: translateY(0);
+  @apply bg-accent;
+}
+
+/* macOS-style active indicator */
+.macos-active {
+  @apply relative;
+}
+
+.macos-active::before {
+  content: "";
+  @apply absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-primary rounded-r-full;
+}
+
+/* Signal strength animations */
 .signal-bar {
   @apply transition-all duration-300 ease-out;
 }
 
-/* Network scanning animation */
 @keyframes radar-sweep {
   0% {
     transform: rotate(0deg);
@@ -109,40 +197,143 @@
   animation: radar-sweep 2s linear infinite;
 }
 
-/* Glassmorphism card effect */
-.glass-card {
-  @apply bg-card/80 backdrop-blur-lg border border-border/50;
+@keyframes pulse-signal {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-signal {
+  animation: pulse-signal 2s ease-in-out infinite;
 }
 
 /* Gradient backgrounds for stats cards */
 .gradient-blue {
   background: linear-gradient(
     135deg,
-    hsl(221.2 83.2% 53.3% / 0.2) 0%,
-    transparent 100%
+    hsl(221.2 83.2% 53.3% / 0.15) 0%,
+    transparent 60%
   );
 }
 
 .gradient-green {
   background: linear-gradient(
     135deg,
-    hsl(142 76% 36% / 0.2) 0%,
-    transparent 100%
+    hsl(142 76% 36% / 0.15) 0%,
+    transparent 60%
   );
 }
 
 .gradient-yellow {
   background: linear-gradient(
     135deg,
-    hsl(48 96% 53% / 0.2) 0%,
-    transparent 100%
+    hsl(48 96% 53% / 0.15) 0%,
+    transparent 60%
   );
 }
 
 .gradient-red {
   background: linear-gradient(
     135deg,
-    hsl(0 84% 60% / 0.2) 0%,
-    transparent 100%
+    hsl(0 84% 60% / 0.15) 0%,
+    transparent 60%
   );
+}
+
+.gradient-purple {
+  background: linear-gradient(
+    135deg,
+    hsl(280 65% 60% / 0.15) 0%,
+    transparent 60%
+  );
+}
+
+/* macOS-style card shadows */
+.macos-shadow {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 12px 24px rgba(0, 0, 0, 0.05);
+}
+
+.dark .macos-shadow {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth page transitions */
+.page-enter {
+  @apply opacity-0 translate-y-2;
+}
+
+.page-enter-active {
+  @apply opacity-100 translate-y-0 transition-all duration-300 ease-out;
+}
+
+/* Focus states - macOS style */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary/30 ring-offset-2 ring-offset-background;
+}
+
+/* Selection highlight */
+::selection {
+  @apply bg-primary/20 text-foreground;
+}
+
+/* Button press effect */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Table row hover */
+.table-row-hover {
+  @apply transition-colors duration-150;
+}
+
+.table-row-hover:hover {
+  @apply bg-muted/50;
+}
+
+/* Status indicator dot */
+.status-dot {
+  @apply w-2 h-2 rounded-full;
+}
+
+.status-dot.online {
+  @apply bg-green-500;
+  box-shadow: 0 0 6px hsl(142 76% 36% / 0.5);
+}
+
+.status-dot.offline {
+  @apply bg-red-500;
+  box-shadow: 0 0 6px hsl(0 84% 60% / 0.5);
+}
+
+/* Loading skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted-foreground) / 0.1) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

@@ -6,13 +6,11 @@ import {
   Wrench, 
   Settings,
   ChevronLeft,
-  ChevronRight,
-  Radio
+  ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface SidebarProps {
   collapsed: boolean
@@ -20,11 +18,11 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/scanner', icon: Wifi, label: 'Scanner' },
-  { path: '/analytics', icon: LineChart, label: 'Analytics' },
-  { path: '/toolbox', icon: Wrench, label: 'Toolbox' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard', description: 'Overview' },
+  { path: '/scanner', icon: Wifi, label: 'Scanner', description: 'WiFi networks' },
+  { path: '/analytics', icon: LineChart, label: 'Analytics', description: 'Signal data' },
+  { path: '/toolbox', icon: Wrench, label: 'Toolbox', description: 'Network tools' },
+  { path: '/settings', icon: Settings, label: 'Settings', description: 'Preferences' },
 ]
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
@@ -33,79 +31,104 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <aside 
       className={cn(
-        "flex flex-col h-full bg-card border-r border-border transition-all duration-300 ease-in-out",
-        collapsed ? "w-16" : "w-64"
+        "flex flex-col h-full macos-sidebar border-r border-border/50 transition-all duration-300 ease-out",
+        collapsed ? "w-[72px]" : "w-[260px]"
       )}
     >
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Radio className="w-8 h-8 text-primary" />
-            <div className="absolute inset-0 animate-pulse-signal">
-              <Radio className="w-8 h-8 text-primary opacity-50" />
-            </div>
+      {/* Logo & App Title */}
+      <div className="flex items-center h-14 px-4 border-b border-border/30 drag-region">
+        <div className="flex items-center gap-3 no-drag">
+          {/* macOS-style App Icon */}
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg">
+            <Wifi className="w-5 h-5 text-white" />
+            <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-bold text-lg leading-tight">Open</span>
-              <span className="text-xs text-muted-foreground -mt-1">Network</span>
+              <span className="font-semibold text-[15px] leading-tight tracking-tight">Open Network</span>
+              <span className="text-[11px] text-muted-foreground">WiFi Analyzer</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 py-4">
-        <nav className="space-y-1 px-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path
-            const Icon = item.icon
+      <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path
+          const Icon = item.icon
 
-            const linkContent = (
-              <NavLink
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-all duration-200",
-                  "hover:bg-accent/50",
-                  isActive 
-                    ? "bg-primary/10 text-primary border border-primary/20" 
-                    : "text-muted-foreground hover:text-foreground",
-                  collapsed && "justify-center"
-                )}
-              >
-                <Icon className={cn("w-5 h-5 flex-shrink-0", isActive && "text-primary")} />
-                {!collapsed && <span>{item.label}</span>}
-              </NavLink>
+          const linkContent = (
+            <NavLink
+              to={item.path}
+              className={cn(
+                "group flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[13px] transition-all duration-150",
+                isActive 
+                  ? "bg-primary/10 text-primary" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/60",
+                collapsed && "justify-center px-2"
+              )}
+            >
+              <div className={cn(
+                "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
+                isActive 
+                  ? "bg-primary/15" 
+                  : "bg-transparent group-hover:bg-accent"
+              )}>
+                <Icon className={cn(
+                  "w-[18px] h-[18px]", 
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                )} />
+              </div>
+              {!collapsed && (
+                <div className="flex flex-col">
+                  <span className={cn(isActive && "text-primary")}>{item.label}</span>
+                </div>
+              )}
+            </NavLink>
+          )
+
+          if (collapsed) {
+            return (
+              <Tooltip key={item.path} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  {linkContent}
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="right" 
+                  sideOffset={8}
+                  className="font-medium text-[13px] px-3 py-1.5"
+                >
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
             )
+          }
 
-            if (collapsed) {
-              return (
-                <Tooltip key={item.path} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    {linkContent}
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="font-medium">
-                    {item.label}
-                  </TooltipContent>
-                </Tooltip>
-              )
-            }
+          return <div key={item.path}>{linkContent}</div>
+        })}
+      </nav>
 
-            return <div key={item.path}>{linkContent}</div>
-          })}
-        </nav>
-      </ScrollArea>
-
-      {/* Collapse Button */}
-      <div className="p-2 border-t border-border">
+      {/* Bottom section with version & collapse */}
+      <div className="px-2 py-3 border-t border-border/30 space-y-2">
+        {!collapsed && (
+          <div className="px-3 py-2">
+            <div className="text-[11px] text-muted-foreground">
+              <span className="font-medium">v1.0.0</span>
+              <span className="mx-1.5">•</span>
+              <span className="text-green-500">●</span>
+              <span className="ml-1">Ready</span>
+            </div>
+          </div>
+        )}
+        
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggle}
           className={cn(
-            "w-full justify-center",
-            !collapsed && "justify-start"
+            "w-full h-8 text-muted-foreground hover:text-foreground",
+            collapsed ? "justify-center" : "justify-start px-3"
           )}
         >
           {collapsed ? (
@@ -113,7 +136,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           ) : (
             <>
               <ChevronLeft className="w-4 h-4 mr-2" />
-              <span>Collapse</span>
+              <span className="text-[13px]">Collapse</span>
             </>
           )}
         </Button>
