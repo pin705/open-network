@@ -113,10 +113,6 @@ export class WifiScanner {
   private parseProfilerOutput(output: string): RawNetwork[] {
     const networks: RawNetwork[] = []
     
-    // Split by interfaces
-    const interfaces = output.split(/Interfaces:\s+/)
-    if (interfaces.length < 2) return []
-
     // Look for Wi-Fi networks in the output
     const sections = ['Current Network Information:', 'Other Local Wi-Fi Networks:']
     
@@ -124,25 +120,28 @@ export class WifiScanner {
       const parts = output.split(section)
       if (parts.length < 2) continue
       
-      const content = parts[1].split(/^\s*[A-Za-z]+:/m)[0]
-      const networkBlocks = content.split('\n')
+      const content = parts[1]
+      const networkLines = content.split('\n')
       
       let currentNetwork: Partial<RawNetwork> & { lastIndent: number } = { lastIndent: -1 }
       let currentSsid = ''
+      let baseIndent = -1
 
-      for (const line of networkBlocks) {
+      for (const line of networkLines) {
         if (!line.trim()) continue
         
         const indent = line.search(/\S/)
         const trimmed = line.trim()
 
-        // If indent is small, it's likely a new SSID
-        if (indent > 0 && (currentNetwork.lastIndent === -1 || indent <= currentNetwork.lastIndent)) {
+        if (baseIndent === -1) baseIndent = indent
+
+        // If indent is equal to base indent, it's a new SSID
+        if (indent === baseIndent) {
           // Push previous if complete
           if (currentSsid && currentNetwork.rssi !== undefined) {
             networks.push({
               ssid: currentSsid,
-              bssid: currentNetwork.bssid || `00:00:00:00:00:00`, // system_profiler usually doesn't show other BSSIDs
+              bssid: currentNetwork.bssid || `00:00:00:00:00:00`,
               rssi: currentNetwork.rssi,
               channel: currentNetwork.channel || 0,
               security: currentNetwork.security || 'Open'
@@ -150,8 +149,8 @@ export class WifiScanner {
           }
           
           currentSsid = trimmed.replace(/:$/, '')
-          currentNetwork = { lastIndent: indent }
-        } else if (currentSsid) {
+          currentNetwork = { lastIndent: indent, rssi: undefined, channel: 0, security: 'Open' }
+        } else if (currentSsid && indent > baseIndent) {
           if (trimmed.startsWith('Channel:')) {
             const match = trimmed.match(/Channel:\s+(\d+)/)
             if (match) currentNetwork.channel = parseInt(match[1])
@@ -162,6 +161,9 @@ export class WifiScanner {
             const match = trimmed.match(/Security:\s+(.+)/)
             if (match) currentNetwork.security = this.normalizeSecurityMac(match[1])
           }
+        } else if (indent < baseIndent && baseIndent !== -1) {
+          // End of section
+          break
         }
       }
       
@@ -177,8 +179,15 @@ export class WifiScanner {
       }
     }
 
-    // Deduplicate by SSID if BSSIDs are missing
-    return Array.from(new Map(networks.map(n => [n.ssid, n])).values())
+    // Deduplicate by SSID
+    const uniqueNetworks = new Map<string, RawNetwork>()
+    for (const n of networks) {
+      if (!uniqueNetworks.has(n.ssid) || (uniqueNetworks.get(n.ssid)!.rssi < n.rssi)) {
+        uniqueNetworks.set(n.ssid, n)
+      }
+    }
+
+    return Array.from(uniqueNetworks.values())
   }
 
   private parseMacOSOutput(output: string): RawNetwork[] {
